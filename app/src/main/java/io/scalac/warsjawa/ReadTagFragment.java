@@ -7,12 +7,16 @@ import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class ReadTagFragment extends Fragment {
 
@@ -71,10 +75,28 @@ public class ReadTagFragment extends Fragment {
             }
             if (messages[0] != null) {
                 byte[] payload = messages[0].getRecords()[0].getPayload();
-                String jsonString = new String(payload);
-                nfcValueTextView.setText(getString(R.string.nfc_value)+"\n" + jsonString);
+                String payloadString = new String(payload);
+                try {
+                    JSONArray jsonArray = new JSONArray(payloadString);
+                    String text = "e-mail: " + jsonArray.getString(0);
+                    text += "\nName: " + jsonArray.getString(1);
+                    nfcValueTextView.setText(getString(R.string.nfc_value) + ":\n" + text);
+                    createAndInsertContact(jsonArray.getString(0), jsonArray.getString(1));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    nfcValueTextView.setText(getString(R.string.nfc_value) + ":\n" + payloadString);
+                }
             }
         }
+    }
+
+    private void createAndInsertContact(String email, String name) {
+        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE)
+                .putExtra(ContactsContract.Intents.Insert.EMAIL, email)
+                .putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
+                .putExtra(ContactsContract.Intents.Insert.NAME, name);
+        startActivity(intent);
     }
 
 }

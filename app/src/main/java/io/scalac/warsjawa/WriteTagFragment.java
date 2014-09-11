@@ -17,8 +17,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.IOException;
 
@@ -184,14 +183,11 @@ public class WriteTagFragment extends Fragment {
 
     private NdefMessage getTagAsNdef() {
         boolean addAAR = false;
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("name", "T");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put("test@example.com");
+        jsonArray.put("Test One");
         NdefRecord jsonRecord = new NdefRecord(
-                NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], jsonObject.toString().getBytes());
+                NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], jsonArray.toString().getBytes());
         if (addAAR) {
             return new NdefMessage(new NdefRecord[]{
                     jsonRecord, NdefRecord.createApplicationRecord(context.getPackageName())
