@@ -2,15 +2,16 @@
 <resources>
 
     <string name="app_name">Warsjawa</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="nfc_settings">NFC Settings</string>
     <string name="nfc_enabled">NFC is enabled</string>
     <string name="nfc_disabled">NFC is disabled</string>
     <string name="nfc_unavailable">NFC is not supported</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="tab_read">Read</string>
     <string name="tab_write">Write</string>
+    <string name="tab_register">Register</string>
     <string name="nfc_value">Current value</string>
+    <string name="nfc_read_info">Tap the band to add a contact to your contacts</string>
+    <string name="by_scalac">by Scalac</string>
+    <string name="scalac_link">http://scalac.io/</string>
 
 </resources>

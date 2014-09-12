@@ -59,6 +59,7 @@ public class MainFragment extends Fragment {
                 currentTabPosition = position;
             }
         });
+        mSlidingTabLayout.setSelectedIndicatorColors(getResources().getColor(R.color.tab_strip));
         mViewPager.setCurrentItem(currentTabPosition);
     }
 
@@ -91,8 +92,8 @@ public class MainFragment extends Fragment {
                 case READ:
                     ((ReadTagFragment) fragment).onNewIntent(intent);
                     break;
-                case WRITE:
-                    ((WriteTagFragment) fragment).onNewIntent(intent);
+                case REGISTER:
+                    ((RegisterFragment) fragment).onNewIntent(intent);
                     break;
                 default:
                     break;
@@ -105,7 +106,7 @@ public class MainFragment extends Fragment {
     }
 
     private enum MenuTab {
-        READ, WRITE
+        READ, REGISTER
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -124,8 +125,8 @@ public class MainFragment extends Fragment {
                     case READ:
                         titles[menuTab.ordinal()] = getString(R.string.tab_read);
                         break;
-                    case WRITE:
-                        titles[menuTab.ordinal()] = getString(R.string.tab_write);
+                    case REGISTER:
+                        titles[menuTab.ordinal()] = getString(R.string.tab_register);
                         break;
                     default:
                         throw new RuntimeException(menuTab.name() + " tab title not implemented");
@@ -139,8 +140,8 @@ public class MainFragment extends Fragment {
             switch (tab) {
                 case READ:
                     return new ReadTagFragment();
-                case WRITE:
-                    return new WriteTagFragment();
+                case REGISTER:
+                    return new RegisterFragment();
                 default:
                     throw new RuntimeException(tab.name() + " tab fragment not implemented");
             }
