@@ -6,22 +6,34 @@ import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import io.scalac.warsjawa.model.Contact;
 import io.scalac.warsjawa.utils.Utils;
 
-public class ReadTagFragment extends Fragment {
+public class ReadTagFragment extends BaseFragment {
 
-    TextView textViewInfo;
-    ProgressBar progressBar;
-    ImageButton imageButtonScalac;
+    private TextView textViewInfo;
+    private ProgressBar progressBar;
+    private ImageButton imageButtonScalac;
 
     public ReadTagFragment() {
     }
@@ -40,11 +52,6 @@ public class ReadTagFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_read_tag, container, false);
@@ -55,10 +62,7 @@ public class ReadTagFragment extends Fragment {
         return rootView;
     }
 
-    private Contact getContact(String tagId) {
-        return new Contact("test@example.com", "Test NFC", tagId);
-    }
-
+    @Override
     public void onNewIntent(Intent intent) {
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
             downloadAndInsertContact(Utils.getTagId(intent));
@@ -71,20 +75,44 @@ public class ReadTagFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Contact contact = getContact(tagId);
+                boolean success = false;
                 try {
-                    Thread.sleep(1500);
-                } catch (InterruptedException e) {
+                    HttpClient httpclient = new DefaultHttpClient();
+
+                    HttpGet request = new HttpGet();
+                    URI website = new URI("http://phansrv.ddns.net/warsjawa/tags/" + tagId + ".json");
+                    request.setURI(website);
+                    HttpResponse response = httpclient.execute(request);
+                    final String responseStr = EntityUtils.toString(response.getEntity());
+                    try {
+                        JSONObject jsonObject = new JSONObject(responseStr);
+                        final Contact contact = new Contact(jsonObject.getString("email"), jsonObject.getString("name"));
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                createAndInsertContact(contact);
+                                progressBar.setVisibility(View.GONE);
+                                textViewInfo.setVisibility(View.VISIBLE);
+                            }
+                        });
+                        success = true;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        createAndInsertContact(contact);
-                        progressBar.setVisibility(View.GONE);
-                        textViewInfo.setVisibility(View.VISIBLE);
-                    }
-                });
+                if (!success)
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity().getApplicationContext(), R.string.contact_download_failed, Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                            textViewInfo.setVisibility(View.VISIBLE);
+                        }
+                    });
             }
         }).start();
     }

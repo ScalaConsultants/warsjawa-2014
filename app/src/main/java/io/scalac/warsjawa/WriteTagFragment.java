@@ -9,7 +9,6 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,7 @@ import org.json.JSONArray;
 
 import java.io.IOException;
 
-public class WriteTagFragment extends Fragment {
+public class WriteTagFragment extends BaseFragment {
 
     private NfcAdapter mNfcAdapter;
     private TextView nfcStatusTextView;
@@ -54,6 +53,7 @@ public class WriteTagFragment extends Fragment {
             nfcStatusTextView.setText(mNfcAdapter.isEnabled() ? R.string.nfc_enabled : R.string.nfc_disabled);
     }
 
+    @Override
     public void onNewIntent(Intent intent) {
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
             // validate that this tag can be written

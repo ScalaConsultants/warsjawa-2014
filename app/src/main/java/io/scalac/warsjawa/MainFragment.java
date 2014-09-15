@@ -7,21 +7,12 @@ import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.scalac.warsjawa.view.SlidingTabLayout;
+public class MainFragment extends BaseFragment {
 
-public class MainFragment extends Fragment {
-
-    int currentTabPosition = 0;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private SlidingTabLayout mSlidingTabLayout;
-    private ViewPager mViewPager;
     private NfcAdapter mNfcAdapter;
     private IntentFilter[] mWriteTagFilters;
     private PendingIntent mNfcPendingIntent;
@@ -43,24 +34,30 @@ public class MainFragment extends Fragment {
                 getActivity().getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP), 0);
         IntentFilter discovery = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
-        IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-        // Intent filters for writing to a tag
         mWriteTagFilters = new IntentFilter[]{discovery};
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getChildFragmentManager());
-        mViewPager = (ViewPager) getView().findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mSlidingTabLayout = (SlidingTabLayout) getView().findViewById(R.id.sliding_tabs);
-        mSlidingTabLayout.setViewPager(mViewPager);
-        mSlidingTabLayout.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                currentTabPosition = position;
-            }
-        });
-        mSlidingTabLayout.setSelectedIndicatorColors(getResources().getColor(R.color.tab_strip));
-        mViewPager.setCurrentItem(currentTabPosition);
+        Fragment fragment = new ChooserFragment();
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.mainContent, fragment)
+                .commit();
+    }
+
+    public void setChildFragment(Fragment fragment, boolean addToBackStack) {
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.mainContent, fragment)
+                .addToBackStack("backStack")
+                .commit();
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        Fragment fragment = getChildFragmentManager().findFragmentById(R.id.mainContent);
+        if (fragment != null) {
+            BaseFragment baseFragment = (BaseFragment) fragment;
+            if (baseFragment.onBackPressed())
+                return true;
+        }
+        return getChildFragmentManager().popBackStackImmediate();
     }
 
     @Override
@@ -84,77 +81,12 @@ public class MainFragment extends Fragment {
         return rootView;
     }
 
+    @Override
     public void onNewIntent(Intent intent) {
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(getFragmentTag(R.id.pager, currentTabPosition));
+        Fragment fragment = getChildFragmentManager().findFragmentById(R.id.mainContent);
         if (fragment != null) {
-            MenuTab tab = MenuTab.values()[currentTabPosition];
-            switch (tab) {
-                case READ:
-                    ((ReadTagFragment) fragment).onNewIntent(intent);
-                    break;
-                case REGISTER:
-                    ((RegisterFragment) fragment).onNewIntent(intent);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private String getFragmentTag(int viewPagerId, int fragmentPosition) {
-        return "android:switcher:" + viewPagerId + ":" + fragmentPosition;
-    }
-
-    private enum MenuTab {
-        READ, REGISTER
-    }
-
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        private CharSequence[] titles;
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-            setupTitles();
-        }
-
-        private void setupTitles() {
-            titles = new CharSequence[MenuTab.values().length];
-            for (MenuTab menuTab : MenuTab.values()) {
-                switch (menuTab) {
-                    case READ:
-                        titles[menuTab.ordinal()] = getString(R.string.tab_read);
-                        break;
-                    case REGISTER:
-                        titles[menuTab.ordinal()] = getString(R.string.tab_register);
-                        break;
-                    default:
-                        throw new RuntimeException(menuTab.name() + " tab title not implemented");
-                }
-            }
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            MenuTab tab = MenuTab.values()[position];
-            switch (tab) {
-                case READ:
-                    return new ReadTagFragment();
-                case REGISTER:
-                    return new RegisterFragment();
-                default:
-                    throw new RuntimeException(tab.name() + " tab fragment not implemented");
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return MenuTab.values().length;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return titles[position];
+            BaseFragment baseFragment = (BaseFragment) fragment;
+            baseFragment.onNewIntent(intent);
         }
     }
 

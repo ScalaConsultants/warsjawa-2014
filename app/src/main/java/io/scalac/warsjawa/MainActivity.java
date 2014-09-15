@@ -34,12 +34,32 @@ public class MainActivity extends FragmentActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        Fragment fragmentContainer = getSupportFragmentManager().findFragmentById(R.id.container);
+        if (fragmentContainer != null) {
+            BaseFragment baseFragment = (BaseFragment) fragmentContainer;
+            if (!baseFragment.onBackPressed()) {
+                super.onBackPressed();
+            }
+        } else
+            super.onBackPressed();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         Utils.NfcState nfcState = Utils.getNfcState(mNfcAdapter);
         if (nfcState != lastNfcState) {
             lastNfcState = nfcState;
             setupFragment();
+        }
+    }
+
+    public void setChildFragment(Fragment fragment, boolean addToBackStack) {
+        Fragment fragmentContainer = getSupportFragmentManager().findFragmentById(R.id.container);
+        if (fragmentContainer != null) {
+            MainFragment mainFragment = (MainFragment) fragmentContainer;
+            mainFragment.setChildFragment(fragment, addToBackStack);
         }
     }
 
@@ -55,8 +75,8 @@ public class MainActivity extends FragmentActivity {
         super.onNewIntent(intent);
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) {
-            MainFragment mainFragment = (MainFragment) fragment;
-            mainFragment.onNewIntent(intent);
+            BaseFragment baseFragment = (BaseFragment) fragment;
+            baseFragment.onNewIntent(intent);
         }
     }
 }
