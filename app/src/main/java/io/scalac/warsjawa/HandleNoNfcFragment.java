@@ -1,7 +1,10 @@
 package io.scalac.warsjawa;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +16,11 @@ import io.scalac.warsjawa.utils.Utils;
 
 
 public class HandleNoNfcFragment extends Fragment {
+
     private static final String ARG_NFC_STATE = "nfcState";
+
+    @SuppressLint("InlinedApi")
+    private static final String ACTION_NFC_SETTINGS = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) ? Settings.ACTION_NFC_SETTINGS : Settings.ACTION_WIRELESS_SETTINGS;
 
     private TextView nfcStatusTextView;
     private Button settingButton;
@@ -49,7 +56,7 @@ public class HandleNoNfcFragment extends Fragment {
             settingButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+                    startActivity(new Intent(ACTION_NFC_SETTINGS));
                 }
             });
         } else {

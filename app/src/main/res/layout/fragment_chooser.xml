@@ -15,14 +15,14 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Read tag"
+            android:text="@string/read_tag"
             android:id="@+id/buttonRead"
             android:layout_gravity="center_horizontal"/>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Register tag"
+            android:text="@string/register_tag"
             android:id="@+id/buttonRegister"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>

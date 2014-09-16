@@ -6,9 +6,6 @@
     <string name="nfc_enabled">NFC is enabled</string>
     <string name="nfc_disabled">NFC is disabled</string>
     <string name="nfc_unavailable">NFC is not supported</string>
-    <string name="tab_read">Read</string>
-    <string name="tab_write">Write</string>
-    <string name="tab_register">Register</string>
     <string name="nfc_value">Current value</string>
     <string name="nfc_read_info">Tap the band to add a contact to your contacts</string>
     <string name="nfc_register_info">Tap the band to register tag ID</string>
@@ -18,5 +15,7 @@
     <string name="register_failed">Register failed</string>
     <string name="contact_download_failed">Contact download failed</string>
     <string name="filter_hint">Filter by name or email</string>
+    <string name="read_tag">Read tag</string>
+    <string name="register_tag">Register tag</string>
 
 </resources>
