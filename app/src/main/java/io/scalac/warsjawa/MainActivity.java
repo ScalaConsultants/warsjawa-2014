@@ -3,33 +3,47 @@ package io.scalac.warsjawa;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
+import io.scalac.warsjawa.fragment.BaseFragment;
+import io.scalac.warsjawa.fragment.HandleNoNfcFragment;
+import io.scalac.warsjawa.fragment.MainFragment;
 import io.scalac.warsjawa.utils.Utils;
 
-
 public class MainActivity extends FragmentActivity {
-    private static final String ARG_NFC_STATE = "nfcState";
     private NfcAdapter mNfcAdapter;
     private Utils.NfcState lastNfcState;
+    private Runnable checkNfcRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Utils.NfcState nfcState = Utils.getNfcState(mNfcAdapter);
+            if (nfcState != lastNfcState) {
+                lastNfcState = nfcState;
+                setupFragment();
+            }
+        }
+    };
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        handler = new Handler();
         if (savedInstanceState == null) {
             lastNfcState = Utils.getNfcState(mNfcAdapter);
             setupFragment();
         } else {
-            lastNfcState = Utils.NfcState.valueOf(savedInstanceState.getString(ARG_NFC_STATE), Utils.getNfcState(mNfcAdapter));
+            lastNfcState = Utils.NfcState.valueOf(savedInstanceState.getString(Constants.ARG_NFC_STATE), Utils.getNfcState(mNfcAdapter));
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(ARG_NFC_STATE, lastNfcState.name());
+        outState.putString(Constants.ARG_NFC_STATE, lastNfcState.name());
         super.onSaveInstanceState(outState);
     }
 
@@ -48,18 +62,21 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Utils.NfcState nfcState = Utils.getNfcState(mNfcAdapter);
-        if (nfcState != lastNfcState) {
-            lastNfcState = nfcState;
-            setupFragment();
-        }
+        checkNfcRunnable.run();
+        handler.postDelayed(checkNfcRunnable, 1000);
     }
 
-    public void setChildFragment(Fragment fragment, boolean addToBackStack) {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(checkNfcRunnable);
+    }
+
+    public void setChildFragment(Fragment fragment, boolean addToBackStack, boolean popCurrent) {
         Fragment fragmentContainer = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragmentContainer != null) {
             MainFragment mainFragment = (MainFragment) fragmentContainer;
-            mainFragment.setChildFragment(fragment, addToBackStack);
+            mainFragment.setChildFragment(fragment, addToBackStack, popCurrent);
         }
     }
 

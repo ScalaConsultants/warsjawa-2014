@@ -1,5 +1,4 @@
-package io.scalac.warsjawa;
-
+package io.scalac.warsjawa.fragment;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -7,9 +6,13 @@ import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import io.scalac.warsjawa.BuildConfig;
+import io.scalac.warsjawa.R;
 
 public class MainFragment extends BaseFragment {
 
@@ -36,17 +39,20 @@ public class MainFragment extends BaseFragment {
         IntentFilter discovery = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         mWriteTagFilters = new IntentFilter[]{discovery};
 
-        Fragment fragment = new ChooserFragment();
+        Fragment fragment = (BuildConfig.IS_REGISTER_VERSION) ? new ChooserFragment() : new ReadTagFragment();
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.mainContent, fragment)
                 .commit();
     }
 
-    public void setChildFragment(Fragment fragment, boolean addToBackStack) {
-        getChildFragmentManager().beginTransaction()
-                .replace(R.id.mainContent, fragment)
-                .addToBackStack("backStack")
-                .commit();
+    public void setChildFragment(Fragment fragment, boolean addToBackStack, boolean popCurrent) {
+        if (popCurrent)
+            getChildFragmentManager().popBackStackImmediate();
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction()
+                .replace(R.id.mainContent, fragment);
+        if (addToBackStack)
+            fragmentTransaction.addToBackStack("backStack");
+        fragmentTransaction.commit();
     }
 
     @Override

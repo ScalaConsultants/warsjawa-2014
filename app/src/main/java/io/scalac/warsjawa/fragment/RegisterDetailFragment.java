@@ -1,4 +1,4 @@
-package io.scalac.warsjawa;
+package io.scalac.warsjawa.fragment;
 
 
 import android.content.Intent;
@@ -12,26 +12,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
+import io.scalac.warsjawa.Constants;
+import io.scalac.warsjawa.R;
 import io.scalac.warsjawa.model.Contact;
 import io.scalac.warsjawa.utils.Utils;
 
 public class RegisterDetailFragment extends BaseFragment {
-
-    private static final String ARG_EMAIL = "email";
-    private static final String ARG_NAME = "name";
 
     private String email;
     private String name;
@@ -43,8 +37,8 @@ public class RegisterDetailFragment extends BaseFragment {
     public static RegisterDetailFragment newInstance(Contact contact) {
         RegisterDetailFragment fragment = new RegisterDetailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_EMAIL, contact.getEmail());
-        args.putString(ARG_NAME, contact.getName());
+        args.putString(Constants.ARG_EMAIL, contact.getEmail());
+        args.putString(Constants.ARG_NAME, contact.getName());
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,8 +50,8 @@ public class RegisterDetailFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            email = getArguments().getString(ARG_EMAIL);
-            name = getArguments().getString(ARG_NAME);
+            email = getArguments().getString(Constants.ARG_EMAIL);
+            name = getArguments().getString(Constants.ARG_NAME);
         }
     }
 
@@ -99,14 +93,10 @@ public class RegisterDetailFragment extends BaseFragment {
                     HttpClient httpclient = new DefaultHttpClient();
 
                     //HttpGet request = new HttpGet();
-                    HttpPost request = new HttpPost();
-                    URI website = new URI("http://phansrv.ddns.net/warsjawa/post_tag.php");
+                    HttpPut request = new HttpPut();
+                    request.addHeader(Utils.getCredentials(getActivity().getApplicationContext()));
+                    URI website = new URI(Constants.API_ADDRESS + "contact/" + email + "/" + tagId);
                     request.setURI(website);
-                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-                    nameValuePairs.add(new BasicNameValuePair("email", email));
-                    nameValuePairs.add(new BasicNameValuePair("name", name));
-                    nameValuePairs.add(new BasicNameValuePair("tagId", tagId));
-                    request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                     HttpResponse response = httpclient.execute(request);
                     statusCode = response.getStatusLine().getStatusCode();
                 } catch (URISyntaxException e) {
@@ -114,13 +104,18 @@ public class RegisterDetailFragment extends BaseFragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                final boolean success = (200 <= statusCode && statusCode < 300);
+                boolean success = (200 <= statusCode && statusCode < 300);
+                final String statusText;
+                if (success)
+                    statusText = getString(R.string.register_success);
+                else
+                    statusText = getString(R.string.register_failed) + ((statusCode > 0) ? ": " + statusCode : "");
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         progressBar.setVisibility(View.GONE);
                         textViewRegInfo.setVisibility(View.VISIBLE);
-                        textViewRegInfo.setText(success ? R.string.register_success : R.string.register_failed);
+                        textViewRegInfo.setText(statusText);
                     }
                 });
             }

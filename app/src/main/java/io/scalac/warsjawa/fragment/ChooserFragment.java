@@ -1,4 +1,4 @@
-package io.scalac.warsjawa;
+package io.scalac.warsjawa.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -6,6 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import io.scalac.warsjawa.MainActivity;
+import io.scalac.warsjawa.R;
+import io.scalac.warsjawa.utils.Utils;
 
 public class ChooserFragment extends BaseFragment {
 
@@ -24,10 +28,14 @@ public class ChooserFragment extends BaseFragment {
                 MainActivity mainActivity = (MainActivity) getActivity();
                 switch (v.getId()) {
                     case R.id.buttonRead:
-                        mainActivity.setChildFragment(new ReadTagFragment(), true);
+                        mainActivity.setChildFragment(new ReadTagFragment(), true, false);
                         break;
                     case R.id.buttonRegister:
-                        mainActivity.setChildFragment(new RegisterFragment(), true);
+                        if (Utils.isLoginDataStored(getActivity().getApplicationContext())) {
+                            mainActivity.setChildFragment(new RegisterFragment(), true, false);
+                        } else {
+                            mainActivity.setChildFragment(new LoginFragment(), true, false);
+                        }
                         break;
                     default:
                         break;

@@ -1,4 +1,4 @@
-package io.scalac.warsjawa;
+package io.scalac.warsjawa.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -32,7 +33,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import io.scalac.warsjawa.Constants;
+import io.scalac.warsjawa.MainActivity;
+import io.scalac.warsjawa.R;
 import io.scalac.warsjawa.model.Contact;
+import io.scalac.warsjawa.utils.Utils;
 
 public class RegisterFragment extends BaseFragment {
     private EditText editText;
@@ -60,31 +65,46 @@ public class RegisterFragment extends BaseFragment {
                         HttpClient httpclient = new DefaultHttpClient();
 
                         HttpGet request = new HttpGet();
-                        URI website = new URI("http://phansrv.ddns.net/warsjawa/contacts.json");
+
+                        request.addHeader(Utils.getCredentials(getActivity().getApplicationContext()));
+                        URI website = new URI(Constants.API_ADDRESS + "contacts");
                         request.setURI(website);
                         HttpResponse response = httpclient.execute(request);
-                        final String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    JSONArray jsonArray = new JSONArray(responseStr);
-                                    contactsList.clear();
-                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                        contactsList.add(new Contact(jsonObject.getString("email"), jsonObject.getString("name")));
+                        int statusCode = response.getStatusLine().getStatusCode();
+                        boolean success = (200 <= statusCode && statusCode < 300);
+                        if (success) {
+                            final String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        JSONArray jsonArray = new JSONArray(responseStr);
+                                        contactsList.clear();
+                                        for (int i = 0; i < jsonArray.length(); i++) {
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            contactsList.add(new Contact(jsonObject.getString("email"), jsonObject.getString("name")));
+                                        }
+                                        contactsAdapterList.clear();
+                                        contactsAdapterList.addAll(contactsList);
+                                        listAdapter.notifyDataSetChanged();
+                                        contactsDownloaded = true;
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
                                     }
-                                    contactsAdapterList.clear();
-                                    contactsAdapterList.addAll(contactsList);
-                                    listAdapter.notifyDataSetChanged();
-                                    contactsDownloaded = true;
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                    progressBar.setVisibility(View.GONE);
+                                    mainLayout.setVisibility(View.VISIBLE);
                                 }
-                                progressBar.setVisibility(View.GONE);
-                                mainLayout.setVisibility(View.VISIBLE);
-                            }
-                        });
+                            });
+                        } else {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity().getApplicationContext(), R.string.log_in_failed, Toast.LENGTH_SHORT).show();
+                                    MainActivity mainActivity = (MainActivity) getActivity();
+                                    mainActivity.setChildFragment(new LoginFragment(), true, true);
+                                }
+                            });
+                        }
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
@@ -99,7 +119,7 @@ public class RegisterFragment extends BaseFragment {
                 editText.clearFocus();
                 Contact contact = contactsAdapterList.get(position);
                 MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.setChildFragment(RegisterDetailFragment.newInstance(contact), true);
+                mainActivity.setChildFragment(RegisterDetailFragment.newInstance(contact), true, false);
             }
         });
         editText.addTextChangedListener(new TextWatcher() {
@@ -150,7 +170,7 @@ public class RegisterFragment extends BaseFragment {
         progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         mainLayout = rootView.findViewById(R.id.mainLayout);
-        editText = (EditText) rootView.findViewById(R.id.editText);
+        editText = (EditText) rootView.findViewById(R.id.editTextLog);
         return rootView;
     }
 

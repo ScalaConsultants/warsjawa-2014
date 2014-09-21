@@ -1,4 +1,4 @@
-package io.scalac.warsjawa;
+package io.scalac.warsjawa.fragment;
 
 
 import android.content.Intent;
@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import io.scalac.warsjawa.Constants;
+import io.scalac.warsjawa.R;
 import io.scalac.warsjawa.model.Contact;
 import io.scalac.warsjawa.utils.Utils;
 
@@ -80,7 +82,7 @@ public class ReadTagFragment extends BaseFragment {
                     HttpClient httpclient = new DefaultHttpClient();
 
                     HttpGet request = new HttpGet();
-                    URI website = new URI("http://phansrv.ddns.net/warsjawa/tags/" + tagId + ".json");
+                    URI website = new URI(Constants.API_ADDRESS + "contact/" + tagId);
                     request.setURI(website);
                     HttpResponse response = httpclient.execute(request);
                     final String responseStr = EntityUtils.toString(response.getEntity());

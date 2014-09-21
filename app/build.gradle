@@ -5,7 +5,7 @@ android {
     buildToolsVersion "20.0.0"
 
     defaultConfig {
-        applicationId "scalac.io.warsjawa"
+        applicationId "io.scalac.warsjawa"
         minSdkVersion 15
         targetSdkVersion 20
         versionCode 1
@@ -15,6 +15,17 @@ android {
         release {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        read {
+            applicationId "io.scalac.warsjawa"
+            buildConfigField "boolean", "IS_REGISTER_VERSION", "false"
+        }
+        register {
+            applicationId "io.scalac.warsjawa.register"
+            buildConfigField "boolean", "IS_REGISTER_VERSION", "true"
         }
     }
 }

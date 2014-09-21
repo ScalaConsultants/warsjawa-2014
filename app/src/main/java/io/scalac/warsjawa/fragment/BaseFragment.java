@@ -1,4 +1,4 @@
-package io.scalac.warsjawa;
+package io.scalac.warsjawa.fragment;
 
 import android.content.Intent;
 import android.support.v4.app.Fragment;
