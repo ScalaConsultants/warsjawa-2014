@@ -2,7 +2,6 @@ package io.scalac.warsjawa.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,7 @@ import io.scalac.warsjawa.R;
 import io.scalac.warsjawa.utils.Utils;
 
 
-public class HandleNoNfcFragment extends Fragment {
+public class HandleNoNfcFragment extends BaseFragment {
 
     private TextView nfcStatusTextView;
     private Button settingButton;

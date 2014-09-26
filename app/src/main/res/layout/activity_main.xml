@@ -12,8 +12,26 @@
         android:src="@drawable/scalac_bg"
         tools:ignore="ContentDescription"/>
 
-    <FrameLayout
-        android:id="@+id/container"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/warningText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/warning_bg"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="@string/no_internet"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/warning_text"/>
+    </LinearLayout>
 </FrameLayout>

@@ -1,11 +1,17 @@
 package io.scalac.warsjawa;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.TextView;
 
 import io.scalac.warsjawa.fragment.BaseFragment;
 import io.scalac.warsjawa.fragment.HandleNoNfcFragment;
@@ -26,11 +32,21 @@ public class MainActivity extends FragmentActivity {
         }
     };
     private Handler handler;
+    private TextView warningText;
+
+    private IntentFilter connIntentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+    private BroadcastReceiver connReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            showHideOrWarning();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        warningText = (TextView) findViewById(R.id.warningText);
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         handler = new Handler();
         if (savedInstanceState == null) {
@@ -38,6 +54,15 @@ public class MainActivity extends FragmentActivity {
             setupFragment();
         } else {
             lastNfcState = Utils.NfcState.valueOf(savedInstanceState.getString(Constants.ARG_NFC_STATE), Utils.getNfcState(mNfcAdapter));
+        }
+    }
+
+    private void showHideOrWarning() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting()) {
+            warningText.setVisibility(View.GONE);
+        } else {
+            warningText.setVisibility(View.VISIBLE);
         }
     }
 
@@ -64,12 +89,15 @@ public class MainActivity extends FragmentActivity {
         super.onResume();
         checkNfcRunnable.run();
         handler.postDelayed(checkNfcRunnable, 1000);
+        showHideOrWarning();
+        registerReceiver(connReceiver, connIntentFilter);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(checkNfcRunnable);
+        unregisterReceiver(connReceiver);
     }
 
     public void setChildFragment(Fragment fragment, boolean addToBackStack, boolean popCurrent) {

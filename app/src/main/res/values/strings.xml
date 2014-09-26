@@ -23,5 +23,6 @@
     <string name="pass">Password</string>
     <string name="log_in_failed">Login or password incorrect</string>
     <string name="enter_login_pass">Enter login and password first</string>
+    <string name="no_internet">Check your internet connection</string>
 
 </resources>
